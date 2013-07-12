@@ -2,7 +2,7 @@
 
 
 /*
-* @version  0.0.1
+* @version  0.0.2
 * @author   Lauri Rooden - https://github.com/litejs/browser-event-lite
 * @license  MIT License  - http://lauri.rooden.ee/mit-license.txt
 */

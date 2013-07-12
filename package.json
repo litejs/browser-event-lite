@@ -1,21 +1,21 @@
 {
-  "name": "browser-event-lite",
-  "version": "0.0.1",
-  "license": "MIT",
-  "description": "Event helper for browser",
-  "main": "browser-event-lite.js",
-  "author": "Lauri Rooden <lauri@rooden.ee>",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/litejs/browser-event-lite.git"
-  },
-  "bugs": {
-    "url": "https://github.com/litejs/browser-event-lite/issues"
-  },
-  "keywords": [
-    "browser",
+	"name": "browser-event-lite",
+	"version": "0.0.2",
+	"license": "MIT",
+	"description": "Event helper for browser",
+	"main": "browser-event.js",
+	"author": "Lauri Rooden <lauri@rooden.ee>",
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/litejs/browser-event-lite.git"
+	},
+	"bugs": {
+		"url": "https://github.com/litejs/browser-event-lite/issues"
+	},
+	"keywords": [
+		"browser",
 		"event",
-    "litejs"
-  ],
-  "readmeFilename": "README.md"
+		"litejs"
+	],
+	"readmeFilename": "README.md"
 }
