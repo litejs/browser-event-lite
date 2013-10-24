@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<title>Test</title>
+</head><body>
+
+<script type="text/javascript" src="../../browser-upgrade-lite/index.js"></script>
+<script type="text/javascript" src="../index.js"></script>
+<div id="click">click</div>
+<div id="once">click once</div>
+<div id="wheel">wheel</div>
+<script>
+
+var click = document.getElementById("click")
+, i1 = 0
+
+Event.add(click, "click", function() {
+	this.innerHTML="click "+ (++i1)
+})
+
+var once = document.getElementById("once")
+, i2 = 0
+
+Event.add(once, "click", function() {
+	Event.remove(this, "click", arguments.callee);
+	this.innerHTML="click once "+ (++i2)
+})
+
+
+var wheel = document.getElementById("wheel")
+
+Event.add(wheel, "wheel", function(e, delta) {
+		console.log(this === wheel, arguments)
+
+	var self = this
+	setTimeout(function(){
+		self.innerHTML="wheel "+delta;
+	},10);
+	Event.stop(e);
+});
+
+/*
+
+El("div","click").to(box).on("click",function(){
+});
+
+El("div","click once").to(box).on("click",function(){
+	this.innerHTML="click once "+ (++this.id)
+});
+
+mousewheel don't work in IE5.5
+In firefox Event.stop doesn't work when innerHTML changed
+El("div","mousewheel").to(box).on("mousewheel",function(e, delta){
+	var self = this
+	setTimeout(function(){
+		self.innerHTML="mousewheel "+delta;
+	},10);
+	Event.stop(e);
+});
+
+*/
+
+
+/*
+window.blur & window.focus for ie6+, chrome
+window.pagehide & window.pageshow for ipfone 3+
+*/
+
+//"pageshow pagehide popstate focus blur offline online DOMFocusIn DOMFocusOut DOMActivate".replace(/\w+/g, function(name){
+//	Event.add(window, name, function(){ El("div", "window " + name + (new Date().format(" HH:MM:ss.SS")), box)})
+//	Event.add(document, name, function(){ El("div", "document " + name + (new Date().format(" HH:MM:ss.SS")), box)})
+//	Event.add(document.body, name, function(){ El("div", "document.body " + name + (new Date().format(" HH:MM:ss.SS")), box)})
+//})
+//
+//El("input:disabled", null, box);
+
+
+/*
+var start = new Date(), arr;
+
+footer.innerHTML="";
+arr = [];
+start = new Date();
+for (var i=0;i<1000;arr[i++]=El("div","tere"));
+footer.append(arr);
+El("div", "time1 "+(new Date() - start),box);
+
+footer.innerHTML="";
+arr = [];
+start = new Date();
+for (var i=0;i<1000;arr[i++]="<div>tere</div>");
+footer.innerHTML = arr.join("");
+El("div", "time2 "+(new Date() - start),box);
+
+footer.innerHTML="";
+arr = [];
+var str="";
+start = new Date();
+for (var i=0;i++<1000;str+="<div>tere</div>");
+footer.innerHTML = str
+El("div", "time3 "+(new Date() - start),box);
+
+footer.innerHTML="";
+arr = [];
+var str="";
+start = new Date();
+for (var i=0;i++<1000;footer.innerHTML+="<div>tere</div>");
+El("div", "time4 "+(new Date() - start),box);
+footer.innerHTML="";
+*/
+
+</script>
+</body></html>

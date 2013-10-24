@@ -10,12 +10,22 @@
 
 
 
-!function(win, doc) {
+!function(root) {
+	// The addEventListener is supported in Internet Explorer from version 9.
+	// https://developer.mozilla.org/en-US/docs/Web/Reference/Events/wheel
 
-	var Event = win.Event || (win.Event={})
-	, fn_id = 0
-	, rendering  = false
+	var Event = root.Event || (root.Event={})
 	, wheelDiff = 120
+	, prefix = ""
+	, addEv = "addEventListener"
+	, remEv = "removeEventListener"
+	, WHEEL = "mousewheel"
+
+	if (!root[addEv]) {
+		prefix = "on"
+		addEv  = "attachEvent"
+		remEv  = "detachEvent"
+	}
 
 	//** Fn.Events
 	Event.Emitter = {
@@ -24,7 +34,7 @@
 			, e = t._e || (t._e = {})
 			;(e[ev] || (e[ev] = [])).push([fn, scope])
 			return t
-		}.byWords(),
+		},
 		non: function(ev, fn) {
 			var t = this
 			if (ev) {
@@ -34,9 +44,10 @@
 				}
 			} else delete t._e
 			return t
-		}.byWords(),
+		},
 		once: function(ev, fn, scope) {
-			return this.on(ev, fn, scope).on(ev, this.non.partial(ev, fn))
+			var t = this
+			return t.on(ev, fn, scope).on(ev, t.non.bind(t, ev, fn))
 		},
 		emit: function(ev) {
 			var t = this
@@ -47,15 +58,12 @@
 		}
 	}
 	//*/
-	function cacheEvent(el, type, fn, fix_fn) {
-		var _e = el._e || (el._e={})
-		_e[type] || (_e[type]={})
-		/*
-		* JavaScript converts fn to a string via .toString(),
-		* use unique id instead of fn source as a key.
-		*/
-		return (_e[type][ fn._fn_id || (fn._fn_id = ++fn_id) ] = type == "mousewheel" ? function(e) {
-				if (!e) e = win.event
+	
+
+	function fixOn(el, type, fn) {
+		var fix = type == WHEEL ? 
+			function(e) {
+				if (!e) e = root.event
 				var delta = e.wheelDelta ? e.wheelDelta/wheelDiff : -e.detail/wheelDiff
 				if (delta != 0) {
 					if (delta < 1 && delta > -1) {
@@ -65,47 +73,39 @@
 					}
 					fn.call(el, e, delta)
 				}
-			} 
-			: fix_fn
-		)
+			} : 
+			prefix ? fn.bind(el, root.event) : fn
+
+		if (fix != fn) fix.origin = fn
+		Event.Emitter.on.call(el, type, fix, el)
+		return fix
 	}
 
-	function uncacheEvent(el, type, fn) {
-		var _e = el._e||{}
-		if (_e[type] && fn._fn_id && _e[type][fn._fn_id]) {
-			var _fn = _e[type][fn._fn_id]
-			delete _e[type][fn._fn_id]
-			return _fn
-		};
-		return fn
+	function fixOff(el, type, fn) {
+		if (fn && el._e && el._e[type]) {
+			for (var _fn, arr = el._e[type], i = 0; _fn=arr[i];i++) { 
+				_fn = _fn[0]
+				if (_fn == fn || _fn.origin == fn) {
+					arr.splice(i, 1)
+					return _fn
+				}
+			}
+		}
 	}
 
-	// The addEventListener is supported in Internet Explorer from version 9.
-	if (win.addEventListener) {
-		Event.add = function(el, ev, fn) {
-			var _fn = cacheEvent(el, ev, fn, fn)
-			ev == "mousewheel" && el.addEventListener("DOMMouseScroll", _fn, false)
-			el.addEventListener(ev, _fn, false)
-			return Event
+	
+	function raw(add, fix, el, ev, fn) {
+		fn = fix(el, ev, fn)
+		el[add](prefix + ev, fn, false)
+		if (ev == WHEEL && !prefix) {
+			el[add]("DOMMouseScroll", fn, false)
 		}
-		Event.remove = function(el, ev, fn) {
-			var _fn = uncacheEvent(el, ev, fn)
-			ev == "mousewheel" && el.removeEventListener("DOMMouseScroll", _fn, false)
-			el.removeEventListener(ev, _fn, false)
-			return Event
-		}
-	} else {
-		Event.add = function(el, ev, fn) {
-			// In IE the event handling function is referenced, not copied, so 
-			// the this keyword always refers to the window and is completely useless.
-			el.attachEvent("on"+ev, cacheEvent(el, ev, fn, function(){fn.call(el,win.event)}) )
-			return Event
-		}
-		Event.remove = function(el, ev, fn) {
-			el.detachEvent("on"+ev, uncacheEvent(el, ev, fn) )
-			return Event
-		}
+		return Event
 	}
+
+	Event.add    = raw.bind(null, addEv, fixOn)
+	Event.remove = raw.bind(null, remEv, fixOff)
+
 	Event.stop = function(e) {
 		e.stopPropagation && e.stopPropagation()
 		e.preventDefault && e.preventDefault()
@@ -113,45 +113,15 @@
 		return e.returnValue = false
 	}
 
-	Event.removeAll = function(el, ev) {
-		var _e = el._e||{}
-		for (var t in _e)
-		/** hasOwnProperty
-		if (_e.hasOwnProperty(t))
-		//*/
-		if (!ev || ev == t) {
-			var fnList = _e[t]
-			for (var fn in fnList)
-			/** hasOwnProperty
-			if (fnList.hasOwnProperty(fn))
-			//*/
-
-			Event.remove(el, t, fnList[fn])
-			delete _e[t]
+	Event.removeAll = function(el, ev, key, arr, i) {
+		if (el._e) for (key in el._e) {
+			if (!ev || key == ev) for (arr = el._e[key], i = arr.length; i--;) {
+				Event.remove(el, key, arr[0])
+			}
 		}
 	}
 
-
-	// http://www.softcomplex.com/docs/get_window_size_and_scrollbar_position.html
-
-	Event.pointerX = function(e) {
-		if (e.changedTouches) e = e.changedTouches[0]
-		return e.pageX || e.clientX + doc.body.scrollLeft || 0
-	}
-	Event.pointerY = function(e) {
-		if (e.changedTouches) e = e.changedTouches[0]
-		return e.pageY || e.clientY + doc.body.scrollTop || 0
-	}
-	Event.pointer = function(e) {
-		var x = Event.pointerX(e), y = Event.pointerY(e)
-		return { x: x, y: y, left: x, top: y }
-	}
-
-	//*/
-
-
-
-}(this, document)
+}(this)
 
 
 
