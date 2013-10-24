@@ -1,9 +1,9 @@
 {
 	"name": "browser-event-lite",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"license": "MIT",
 	"description": "Event helper for browser",
-	"main": "browser-event.js",
+	"main": "index.js",
 	"author": "Lauri Rooden <lauri@rooden.ee>",
 	"repository": {
 		"type": "git",
@@ -17,5 +17,14 @@
 		"event",
 		"litejs"
 	],
+	"scripts": {
+		"build": "node node_modules/buildman/index.js --all"
+	},
+	"devDependencies": {
+		"buildman": "*"
+	},
+	"buildman": {
+		"min.js": "index.js"
+	},
 	"readmeFilename": "README.md"
 }
