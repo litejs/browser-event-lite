@@ -19,7 +19,10 @@
 	, prefix = ""
 	, addEv = "addEventListener"
 	, remEv = "removeEventListener"
-	, WHEEL = "mousewheel"
+	, WHEEL_EVENT = 
+		"onwheel" in root      ? "wheel" :      // Modern browsers support "wheel"
+		"onmousewheel" in root ? "mousewheel" : // Webkit and IE support at least "mousewheel"
+		"DOMMouseScroll"; // let's assume that remaining browsers are older Firefox
 
 	if (!root[addEv]) {
 		prefix = "on"
@@ -61,20 +64,28 @@
 	
 
 	function fixOn(el, type, fn) {
-		var fix = type == WHEEL ? 
+		//TODO: remove wraper from trusted wheel event
+		//var fix = type == "wheel" && type !== WHEEL_EVENT ? 
+		var fix = type == "wheel" ? 
 			function(e) {
 				if (!e) e = root.event
-				var delta = e.wheelDelta ? e.wheelDelta/wheelDiff : -e.detail/wheelDiff
+				var delta = (e.wheelDelta || -e.detail || -e.deltaY)/wheelDiff
 				if (delta != 0) {
 					if (delta < 1 && delta > -1) {
 						var diff = (delta < 0 ? -1 : 1)/delta
 						delta *= diff
 						wheelDiff /= diff
 					}
+					//TODO: fix event
+					// e.deltaY = 
+					// e.deltaX = - 1/40 * e.wheelDeltaX|0
+					// e.target = e.target || e.srcElement
 					fn.call(el, e, delta)
 				}
 			} : 
-			prefix ? fn.bind(el, root.event) : fn
+			prefix ? function(){
+				fn.call(el, root.event)
+			} : fn
 
 		if (fix != fn) fix.origin = fn
 		Event.Emitter.on.call(el, type, fix, el)
@@ -96,10 +107,7 @@
 	
 	function raw(add, fix, el, ev, fn) {
 		fn = fix(el, ev, fn)
-		el[add](prefix + ev, fn, false)
-		if (ev == WHEEL && !prefix) {
-			el[add]("DOMMouseScroll", fn, false)
-		}
+		el[add](prefix + (ev == "wheel" ? WHEEL_EVENT : ev), fn, false)
 		return Event
 	}
 
