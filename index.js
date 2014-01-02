@@ -2,7 +2,8 @@
 
 
 /*
-* @version  0.0.2
+* @version  0.1.2
+* @date     2014-01-02
 * @author   Lauri Rooden - https://github.com/litejs/browser-event-lite
 * @license  MIT License  - http://lauri.rooden.ee/mit-license.txt
 */
@@ -22,16 +23,8 @@
 	, WHEEL_EVENT = 
 		"onwheel" in root      ? "wheel" :      // Modern browsers support "wheel"
 		"onmousewheel" in root ? "mousewheel" : // Webkit and IE support at least "mousewheel"
-		"DOMMouseScroll"; // let's assume that remaining browsers are older Firefox
-
-	if (!root[addEv]) {
-		prefix = "on"
-		addEv  = "attachEvent"
-		remEv  = "detachEvent"
-	}
-
-	//** Fn.Events
-	Event.Emitter = {
+		"DOMMouseScroll"                        // let's assume that remaining browsers are older Firefox
+	, Emitter = Event.Emitter = {
 		on: function(ev, fn, scope) {
 			var t = this
 			, e = t._e || (t._e = {})
@@ -60,8 +53,16 @@
 			return t
 		}
 	}
-	//*/
-	
+
+	// Alias
+	E.off = E.non
+
+	if (!root[addEv]) {
+		prefix = "on"
+		addEv  = "attachEvent"
+		remEv  = "detachEvent"
+	}
+
 
 	function fixOn(el, type, fn) {
 		//TODO: remove wraper from trusted wheel event
@@ -88,7 +89,7 @@
 			} : fn
 
 		if (fix != fn) fix.origin = fn
-		Event.Emitter.on.call(el, type, fix, el)
+		Emitter.on.call(el, type, fix, el)
 		return fix
 	}
 
