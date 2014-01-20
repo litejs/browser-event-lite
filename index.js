@@ -2,12 +2,12 @@
 
 
 /*
-* @version  0.1.2
-* @date     2014-01-02
-* @author   Lauri Rooden - https://github.com/litejs/browser-event-lite
-* @license  MIT License  - http://lauri.rooden.ee/mit-license.txt
+* @version    0.1.3
+* @date       2014-01-20
+* @stability  2 - Unstable
+* @author     Lauri Rooden <lauri@rooden.ee>
+* @license    MIT License
 */
-
 
 
 
@@ -55,7 +55,7 @@
 	}
 
 	// Alias
-	E.off = E.non
+	Emitter.off = Emitter.non
 
 	if (!root[addEv]) {
 		prefix = "on"

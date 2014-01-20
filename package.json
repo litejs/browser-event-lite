@@ -1,10 +1,22 @@
 {
   "name": "browser-event-lite",
-  "version": "0.1.2",
+  "version": "0.1.3",
+  "stability": 2,
   "license": "MIT",
-  "description": "Event helper for browser",
-  "main": "index.js",
   "author": "Lauri Rooden <lauri@rooden.ee>",
+  "description": "Event helper for browser",
+  "keywords": [
+    "browser",
+    "event",
+    "litejs"
+  ],
+  "main": "index.js",
+  "readmeFilename": "README.md",
+  "scripts": {
+    "build": "node node_modules/buildman/index.js --all",
+    "travis-test": "istanbul cover ./tests/run.js && (coveralls < coverage/lcov.info || exit 0)",
+    "test": "node tests/run.js"
+  },
   "repository": {
     "type": "git",
     "url": "git://github.com/litejs/browser-event-lite.git"
@@ -12,19 +24,10 @@
   "bugs": {
     "url": "https://github.com/litejs/browser-event-lite/issues"
   },
-  "keywords": [
-    "browser",
-    "event",
-    "litejs"
-  ],
-  "scripts": {
-    "build": "node node_modules/buildman/index.js --all"
-  },
   "devDependencies": {
     "buildman": "*"
   },
   "buildman": {
     "min.js": "index.js"
-  },
-  "readmeFilename": "README.md"
+  }
 }
