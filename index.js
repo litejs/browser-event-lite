@@ -2,8 +2,8 @@
 
 
 /*
-* @version    0.1.3
-* @date       2014-01-20
+* @version    0.1.4
+* @date       2014-03-10
 * @stability  2 - Unstable
 * @author     Lauri Rooden <lauri@rooden.ee>
 * @license    MIT License
@@ -14,16 +14,19 @@
 !function(root) {
 	// The addEventListener is supported in Internet Explorer from version 9.
 	// https://developer.mozilla.org/en-US/docs/Web/Reference/Events/wheel
+	// - IE8 always prevents the default of the mousewheel event.
 
-	var Event = root.Event || (root.Event={})
+	var doc = document
+	, Event = root.Event || (root.Event={})
 	, wheelDiff = 120
-	, prefix = ""
 	, addEv = "addEventListener"
 	, remEv = "removeEventListener"
+	, prefix = root[addEv] ? "" : (addEv = "attachEvent", remEv = "detachEvent", "on")
 	, WHEEL_EVENT = 
-		"onwheel" in root      ? "wheel" :      // Modern browsers support "wheel"
-		"onmousewheel" in root ? "mousewheel" : // Webkit and IE support at least "mousewheel"
-		"DOMMouseScroll"                        // let's assume that remaining browsers are older Firefox
+		"onwheel" in doc      ? "wheel" :      // Modern browsers support "wheel"
+		"onmousewheel" in doc ? "mousewheel" : // Webkit and IE support at least "mousewheel"
+		"DOMMouseScroll"                       // let's assume that remaining browsers are older Firefox
+
 	, Emitter = Event.Emitter = {
 		on: function(ev, fn, scope) {
 			var t = this
@@ -57,17 +60,9 @@
 	// Alias
 	Emitter.off = Emitter.non
 
-	if (!root[addEv]) {
-		prefix = "on"
-		addEv  = "attachEvent"
-		remEv  = "detachEvent"
-	}
 
-
-	function fixOn(el, type, fn) {
-		//TODO: remove wraper from trusted wheel event
-		//var fix = type == "wheel" && type !== WHEEL_EVENT ? 
-		var fix = type == "wheel" ? 
+	Event.add = function(el, ev, _fn) {
+		var fn = ev == "wheel" ? 
 			function(e) {
 				if (!e) e = root.event
 				var delta = (e.wheelDelta || -e.detail || -e.deltaY)/wheelDiff
@@ -81,39 +76,34 @@
 					// e.deltaY = 
 					// e.deltaX = - 1/40 * e.wheelDeltaX|0
 					// e.target = e.target || e.srcElement
-					fn.call(el, e, delta)
+					_fn.call(el, e, delta)
 				}
 			} : 
 			prefix ? function(){
-				fn.call(el, root.event)
-			} : fn
+				_fn.call(el, root.event)
+			} : _fn
 
-		if (fix != fn) fix.origin = fn
-		Emitter.on.call(el, type, fix, el)
-		return fix
-	}
+		if (fn != _fn) fn.origin = _fn
+		Emitter.on.call(el, ev, fn, el)
 
-	function fixOff(el, type, fn) {
-		if (fn && el._e && el._e[type]) {
-			for (var _fn, arr = el._e[type], i = 0; _fn=arr[i];i++) { 
-				_fn = _fn[0]
-				if (_fn == fn || _fn.origin == fn) {
-					arr.splice(i, 1)
-					return _fn
-				}
-			}
-		}
-	}
 
-	
-	function raw(add, fix, el, ev, fn) {
-		fn = fix(el, ev, fn)
-		el[add](prefix + (ev == "wheel" ? WHEEL_EVENT : ev), fn, false)
+		el[addEv](prefix + (ev == "wheel" ? WHEEL_EVENT : ev), fn, false)
 		return Event
 	}
 
-	Event.add    = raw.bind(null, addEv, fixOn)
-	Event.remove = raw.bind(null, remEv, fixOff)
+	Event.remove = function(el, ev, fn) {
+		if (fn && el._e && el._e[ev]) {
+			for (var _fn, arr = el._e[ev], i = 0; _fn=arr[i];i++) { 
+				_fn = _fn[0]
+				if (_fn == fn || _fn.origin == fn) {
+					arr.splice(i, 1)
+					fn = _fn
+				}
+			}
+		}
+		el[remEv](prefix + (ev == "wheel" ? WHEEL_EVENT : ev), fn, false)
+		return Event
+	}
 
 	Event.stop = function(e) {
 		e.stopPropagation && e.stopPropagation()
