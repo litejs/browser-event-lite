@@ -2,29 +2,28 @@
 
 
 /*
-* @version    0.1.4
-* @date       2014-03-10
-* @stability  2 - Unstable
-* @author     Lauri Rooden <lauri@rooden.ee>
-* @license    MIT License
-*/
+ * @version    0.1.5
+ * @date       2014-09-22
+ * @stability  2 - Unstable
+ * @author     Lauri Rooden <lauri@rooden.ee>
+ * @license    MIT License
+ */
 
 
 
-!function(root) {
+!function(window, document) {
 	// The addEventListener is supported in Internet Explorer from version 9.
 	// https://developer.mozilla.org/en-US/docs/Web/Reference/Events/wheel
 	// - IE8 always prevents the default of the mousewheel event.
 
-	var doc = document
-	, Event = root.Event || (root.Event={})
+	var Event = window.Event || (window.Event={})
 	, wheelDiff = 120
 	, addEv = "addEventListener"
 	, remEv = "removeEventListener"
-	, prefix = root[addEv] ? "" : (addEv = "attachEvent", remEv = "detachEvent", "on")
-	, WHEEL_EVENT = 
-		"onwheel" in doc      ? "wheel" :      // Modern browsers support "wheel"
-		"onmousewheel" in doc ? "mousewheel" : // Webkit and IE support at least "mousewheel"
+	, prefix = window[addEv] ? "" : (addEv = "attachEvent", remEv = "detachEvent", "on")
+	, WHEEL_EVENT =
+		"onwheel" in document      ? "wheel" :      // Modern browsers support "wheel"
+		"onmousewheel" in document ? "mousewheel" : // Webkit and IE support at least "mousewheel"
 		"DOMMouseScroll"                       // let's assume that remaining browsers are older Firefox
 
 	, Emitter = Event.Emitter = {
@@ -38,8 +37,11 @@
 			var t = this
 			if (ev) {
 				if (t._e && t._e[ev]) {
-					if (fn) for (var a = t._e[ev], l = a.length; l--;) if (a[l][0] == fn) a.splice(l, 1)
-					else delete t._e[ev]
+					if (fn) {
+						for (var a = t._e[ev], l = a.length; l--;) {
+							if (a[l][0] == fn) a.splice(l, 1)
+						}
+					} else delete t._e[ev]
 				}
 			} else delete t._e
 			return t
@@ -51,7 +53,9 @@
 		emit: function(ev) {
 			var t = this
 			if (t._e && t._e[ev]) {
-				for (var i=0, e=t._e[ev], a=e.slice.call(arguments, 1); ev=e[i++];) ev[0].apply(ev[1]||t, a)
+				for (var i=0, e=t._e[ev], a=e.slice.call(arguments, 1); ev=e[i++];) {
+					ev[0].apply(ev[1]||t, a)
+				}
 			}
 			return t
 		}
@@ -62,9 +66,9 @@
 
 
 	Event.add = function(el, ev, _fn) {
-		var fn = ev == "wheel" ? 
+		var fn = ev == "wheel" ?
 			function(e) {
-				if (!e) e = root.event
+				if (!e) e = window.event
 				var delta = (e.wheelDelta || -e.detail || -e.deltaY)/wheelDiff
 				if (delta != 0) {
 					if (delta < 1 && delta > -1) {
@@ -73,14 +77,14 @@
 						wheelDiff /= diff
 					}
 					//TODO: fix event
-					// e.deltaY = 
+					// e.deltaY =
 					// e.deltaX = - 1/40 * e.wheelDeltaX|0
 					// e.target = e.target || e.srcElement
 					_fn.call(el, e, delta)
 				}
-			} : 
+			} :
 			prefix ? function(){
-				_fn.call(el, root.event)
+				_fn.call(el, window.event)
 			} : _fn
 
 		if (fn != _fn) fn.origin = _fn
@@ -93,7 +97,7 @@
 
 	Event.remove = function(el, ev, fn) {
 		if (fn && el._e && el._e[ev]) {
-			for (var _fn, arr = el._e[ev], i = 0; _fn=arr[i];i++) { 
+			for (var _fn, arr = el._e[ev], i = 0; _fn=arr[i];i++) {
 				_fn = _fn[0]
 				if (_fn == fn || _fn.origin == fn) {
 					arr.splice(i, 1)
@@ -120,7 +124,7 @@
 		}
 	}
 
-}(this)
+}(this, document)
 
 
 
