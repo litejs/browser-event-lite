@@ -2,8 +2,8 @@
 
 
 /*
- * @version    0.1.5
- * @date       2014-09-22
+ * @version    0.2.0
+ * @date       2015-01-23
  * @stability  2 - Unstable
  * @author     Lauri Rooden <lauri@rooden.ee>
  * @license    MIT License
@@ -16,7 +16,8 @@
 	// https://developer.mozilla.org/en-US/docs/Web/Reference/Events/wheel
 	// - IE8 always prevents the default of the mousewheel event.
 
-	var Event = window.Event || (window.Event={})
+	var removed
+	, Event = window.Event || (window.Event={})
 	, wheelDiff = 120
 	, addEv = "addEventListener"
 	, remEv = "removeEventListener"
@@ -26,44 +27,56 @@
 		"onmousewheel" in document ? "mousewheel" : // Webkit and IE support at least "mousewheel"
 		"DOMMouseScroll"                       // let's assume that remaining browsers are older Firefox
 
-	, Emitter = Event.Emitter = {
-		on: function(ev, fn, scope) {
-			var t = this
-			, e = t._e || (t._e = {})
-			;(e[ev] || (e[ev] = [])).push([fn, scope])
-			return t
-		},
-		non: function(ev, fn) {
-			var t = this
-			if (ev) {
-				if (t._e && t._e[ev]) {
-					if (fn) {
-						for (var a = t._e[ev], l = a.length; l--;) {
-							if (a[l][0] == fn) a.splice(l, 1)
-						}
-					} else delete t._e[ev]
-				}
-			} else delete t._e
-			return t
-		},
-		once: function(ev, fn, scope) {
-			var t = this
-			return t.on(ev, fn, scope).on(ev, t.non.bind(t, ev, fn))
-		},
-		emit: function(ev) {
-			var t = this
-			if (t._e && t._e[ev]) {
-				for (var i=0, e=t._e[ev], a=e.slice.call(arguments, 1); ev=e[i++];) {
-					ev[0].apply(ev[1]||t, a)
-				}
-			}
-			return t
-		}
+
+	Event.Emitter = {
+		on: on,
+		non: non,
+		off: non,
+		once: once,
+		emit: emit
 	}
 
-	// Alias
-	Emitter.off = Emitter.non
+	function on(type, fn, scope, _origin) {
+		var emitter = this
+		, events = emitter._e || (emitter._e = {})
+		;(events[type] || (events[type] = [])).unshift(scope, _origin, fn)
+		return emitter
+	}
 
+	function non(type, fn, scope) {
+		var events, i
+		, emitter = this
+		if (events = (type && emitter._e && emitter._e[type])) {
+			if (fn) for (i = events.length; i--; i--) {
+				if ((events[i--] === fn || events[i] === fn) && events[i - 1] == scope) {
+					removed = events.splice(i - 1, 3)
+					break
+				}
+			}
+			else events.length = 0
+		}
+		return emitter
+	}
+
+	function once(type, fn, scope) {
+		var emitter = this
+		function remove() {
+			emitter.non(type, fn, scope).non(type, remove, scope)
+		}
+		return emitter.on(type, fn, scope).on(type, remove, scope)
+	}
+
+	function emit(type) {
+		var args, i
+		, emitter = this
+		if (type = (emitter._e && emitter._e[type])) {
+			type = type.slice()
+			for (i = type.length, args = type.slice.call(arguments, 1); i--; i--) {
+				type[i--].apply(type[i - 1] || emitter, args)
+			}
+		}
+		return emitter
+	}
 
 	Event.add = function(el, ev, _fn) {
 		var fn = ev == "wheel" ?
@@ -87,25 +100,19 @@
 				_fn.call(el, window.event)
 			} : _fn
 
-		if (fn != _fn) fn.origin = _fn
-		Emitter.on.call(el, ev, fn, el)
-
+		on.call(el, ev, fn, el, _fn)
 
 		el[addEv](prefix + (ev == "wheel" ? WHEEL_EVENT : ev), fn, false)
 		return Event
 	}
 
 	Event.remove = function(el, ev, fn) {
-		if (fn && el._e && el._e[ev]) {
-			for (var _fn, arr = el._e[ev], i = 0; _fn=arr[i];i++) {
-				_fn = _fn[0]
-				if (_fn == fn || _fn.origin == fn) {
-					arr.splice(i, 1)
-					fn = _fn
-				}
-			}
+		// HACK:2015-01-23:lauri:capturing removed this way is ugly but let it be till better idea will come
+		removed = null
+		non.call(el, ev, fn, el)
+		if (removed) {
+			el[remEv](prefix + (ev == "wheel" ? WHEEL_EVENT : ev), removed[2])
 		}
-		el[remEv](prefix + (ev == "wheel" ? WHEEL_EVENT : ev), fn, false)
 		return Event
 	}
 
@@ -118,9 +125,7 @@
 
 	Event.removeAll = function(el, ev, key, arr, i) {
 		if (el._e) for (key in el._e) {
-			if (!ev || key == ev) for (arr = el._e[key], i = arr.length; i--;) {
-				Event.remove(el, key, arr[0])
-			}
+			if (!ev || key === ev) Event.remove(el, key)
 		}
 	}
 
