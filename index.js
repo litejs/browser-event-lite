@@ -17,22 +17,24 @@
 	// - IE8 always prevents the default of the mousewheel event.
 
 	var removed
-	, Event = window.Event || (window.Event={})
+	, Event = window.Event || (window.Event = {})
 	, wheelDiff = 120
 	, addEv = "addEventListener"
 	, remEv = "removeEventListener"
 	, prefix = window[addEv] ? "" : (addEv = "attachEvent", remEv = "detachEvent", "on")
-	, WHEEL_EVENT =
-		"onwheel" in document      ? "wheel" :      // Modern browsers support "wheel"
-		"onmousewheel" in document ? "mousewheel" : // Webkit and IE support at least "mousewheel"
-		"DOMMouseScroll"                       // let's assume that remaining browsers are older Firefox
-
+	, translateEvent = {
+		wheel:
+			"onwheel" in document      ? "wheel" :      // Modern browsers
+			"onmousewheel" in document ? "mousewheel" : // Webkit and IE
+			"DOMMouseScroll"                            // older Firefox
+	}
 
 	Event.Emitter = {
 		on: on,
 		non: non,
 		off: non,
 		once: once,
+		one: once,
 		emit: emit
 	}
 
@@ -44,9 +46,10 @@
 	}
 
 	function non(type, fn, scope) {
-		var events, i
+		var i
 		, emitter = this
-		if (events = (type && emitter._e && emitter._e[type])) {
+		, events = emitter._e && emitter._e[type]
+		if (events) {
 			if (fn) for (i = events.length; i--; i--) {
 				if ((events[i--] === fn || events[i] === fn) && events[i - 1] == scope) {
 					removed = events.splice(i - 1, 3)
@@ -63,7 +66,7 @@
 		function remove() {
 			emitter.non(type, fn, scope).non(type, remove, scope)
 		}
-		return emitter.on(type, fn, scope).on(type, remove, scope)
+		return emitter.on(type, remove, scope).on(type, fn, scope)
 	}
 
 	function emit(type) {
@@ -96,13 +99,13 @@
 					_fn.call(el, e, delta)
 				}
 			} :
-			prefix ? function(){
+			prefix ? function() {
 				_fn.call(el, window.event)
 			} : _fn
 
 		on.call(el, ev, fn, el, _fn)
 
-		el[addEv](prefix + (ev == "wheel" ? WHEEL_EVENT : ev), fn, false)
+		el[addEv](prefix + (translateEvent[ev] || ev), fn, false)
 		return Event
 	}
 
@@ -111,7 +114,7 @@
 		removed = null
 		non.call(el, ev, fn, el)
 		if (removed) {
-			el[remEv](prefix + (ev == "wheel" ? WHEEL_EVENT : ev), removed[2])
+			el[remEv](prefix + (translateEvent[ev] || ev), removed[2])
 		}
 		return Event
 	}
