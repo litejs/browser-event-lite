@@ -11,9 +11,9 @@
 
 
 /*
-* Windows versions of Opera have a bit of buggy behavior: 
-* when you type the +, -, *, or / keys on the keypad, 
-* then two keypress events are triggered instead of one. 
+* Windows versions of Opera have a bit of buggy behavior:
+* when you type the +, -, *, or / keys on the keypad,
+* then two keypress events are triggered instead of one.
 * This has been observed on Opera 11 and Opera 8.5.
 * http://unixpapa.com/js/key.html
 */
@@ -56,7 +56,7 @@
 	Event.setKeyMap = function(map) {
 		maps.unshift(map)
 	}
-	
+
 	Event.rmKeyMap = function(map) {
 		var i = maps.indexOf(map||maps[0])
 		if (i > -1) maps.splice(i, 1)

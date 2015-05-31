@@ -22,11 +22,31 @@
 	, addEv = "addEventListener"
 	, remEv = "removeEventListener"
 	, prefix = window[addEv] ? "" : (addEv = "attachEvent", remEv = "detachEvent", "on")
-	, translateEvent = {
+	, fixEv = Event.fixEv = {
 		wheel:
 			"onwheel" in document      ? "wheel" :      // Modern browsers
 			"onmousewheel" in document ? "mousewheel" : // Webkit and IE
 			"DOMMouseScroll"                            // older Firefox
+	}
+	, fixFn = Event.fixFn = {
+		wheel: function(el, _fn) {
+			return function(e) {
+				if (!e) e = window.event
+				var delta = (e.wheelDelta || -e.detail || -e.deltaY)/wheelDiff
+				if (delta != 0) {
+					if (delta < 1 && delta > -1) {
+						var diff = (delta < 0 ? -1 : 1)/delta
+						delta *= diff
+						wheelDiff /= diff
+					}
+					//TODO: fix event
+					// e.deltaY =
+					// e.deltaX = - 1/40 * e.wheelDeltaX|0
+					// e.target = e.target || e.srcElement
+					_fn.call(el, e, delta)
+				}
+			}
+		}
 	}
 
 	Event.Emitter = {
@@ -82,23 +102,7 @@
 	}
 
 	Event.add = function(el, ev, _fn) {
-		var fn = ev == "wheel" ?
-			function(e) {
-				if (!e) e = window.event
-				var delta = (e.wheelDelta || -e.detail || -e.deltaY)/wheelDiff
-				if (delta != 0) {
-					if (delta < 1 && delta > -1) {
-						var diff = (delta < 0 ? -1 : 1)/delta
-						delta *= diff
-						wheelDiff /= diff
-					}
-					//TODO: fix event
-					// e.deltaY =
-					// e.deltaX = - 1/40 * e.wheelDeltaX|0
-					// e.target = e.target || e.srcElement
-					_fn.call(el, e, delta)
-				}
-			} :
+		var fn = fixFn[ev] ? fixFn[ev](el, _fn) :
 			prefix ? function() {
 				var e = window.event
 				e.target = e.srcElement
@@ -107,7 +111,7 @@
 
 		on.call(el, ev, fn, el, _fn)
 
-		el[addEv](prefix + (translateEvent[ev] || ev), fn, false)
+		el[addEv](prefix + (fixEv[ev] || ev), fn, false)
 		return Event
 	}
 
@@ -116,7 +120,7 @@
 		removed = null
 		non.call(el, ev, fn, el)
 		if (removed) {
-			el[remEv](prefix + (translateEvent[ev] || ev), removed[2])
+			el[remEv](prefix + (fixEv[ev] || ev), removed[2])
 		}
 		return Event
 	}
