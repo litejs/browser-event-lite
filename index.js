@@ -100,7 +100,9 @@
 				}
 			} :
 			prefix ? function() {
-				_fn.call(el, window.event)
+				var e = window.event
+				e.target = e.srcElement
+				_fn.call(el, e)
 			} : _fn
 
 		on.call(el, ev, fn, el, _fn)
