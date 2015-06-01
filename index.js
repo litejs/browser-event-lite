@@ -106,6 +106,8 @@
 			prefix ? function() {
 				var e = window.event
 				e.target = e.srcElement
+				e.preventDefault = preventDefault
+				e.stopPropagation = stopPropagation
 				_fn.call(el, e)
 			} : _fn
 
@@ -123,6 +125,13 @@
 			el[remEv](prefix + (fixEv[ev] || ev), removed[2])
 		}
 		return Event
+	}
+
+	function preventDefault() {
+		this.returnValue = false
+	}
+	function stopPropagation() {
+		this.cancelBubble = this.cancel = true
 	}
 
 	Event.stop = function(e) {
