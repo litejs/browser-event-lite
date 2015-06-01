@@ -10,6 +10,7 @@
 <div id="click">click</div>
 <div id="once">click once</div>
 <div id="wheel">wheel</div>
+<div id="log"></div>
 <script>
 
 var click = document.getElementById("click")
@@ -20,11 +21,17 @@ Event.add(click, "click", function() {
 })
 
 var once = document.getElementById("once")
+, log = document.getElementById("log")
 , i2 = 0
 
 Event.add(once, "click", function() {
 	Event.remove(this, "click", arguments.callee);
 	this.innerHTML="click once "+ (++i2)
+	log.innerHTML+="click once "+ (++i2) + "<br>"
+})
+
+Event.add(once, "click", function() {
+	log.innerHTML+="click once "+ (++i2) + "<br>"
 })
 
 

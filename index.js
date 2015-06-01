@@ -16,8 +16,7 @@
 	// https://developer.mozilla.org/en-US/docs/Web/Reference/Events/wheel
 	// - IE8 always prevents the default of the mousewheel event.
 
-	var removed
-	, Event = window.Event || (window.Event = {})
+	var Event = window.Event || (window.Event = {})
 	, wheelDiff = 120
 	, addEv = "addEventListener"
 	, remEv = "removeEventListener"
@@ -72,7 +71,7 @@
 		if (events) {
 			if (fn) for (i = events.length; i--; i--) {
 				if ((events[i--] === fn || events[i] === fn) && events[i - 1] == scope) {
-					removed = events.splice(i - 1, 3)
+					events.splice(i - 1, 3)
 					break
 				}
 			}
@@ -118,11 +117,11 @@
 	}
 
 	Event.remove = function(el, ev, fn) {
-		// HACK:2015-01-23:lauri:capturing removed this way is ugly but let it be till better idea will come
-		removed = null
-		non.call(el, ev, fn, el)
-		if (removed) {
-			el[remEv](prefix + (fixEv[ev] || ev), removed[2])
+		var evs = el._e && el._e[ev]
+		, id = evs && evs.indexOf(fn)
+		if (id) {
+			el[remEv](prefix + (fixEv[ev] || ev), evs[id + 1])
+			evs.splice(id - 1, 3)
 		}
 		return Event
 	}
