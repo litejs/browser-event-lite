@@ -93,8 +93,8 @@
 		, emitter = this
 		if (type = (emitter._e && emitter._e[type])) {
 			type = type.slice()
-			for (i = type.length, args = type.slice.call(arguments, 1); i--; i--) {
-				type[i--].apply(type[i - 1] || emitter, args)
+			for (i = type.length, args = type.slice.call(arguments, 1); i--; ) {
+				type[i--].apply(type[--i] || emitter, args)
 			}
 		}
 		return emitter
@@ -134,10 +134,9 @@
 	}
 
 	Event.stop = function(e) {
-		e.stopPropagation && e.stopPropagation()
-		e.preventDefault && e.preventDefault()
-		e.cancelBubble = e.cancel = true
-		return e.returnValue = false
+		e.stopPropagation()
+		e.preventDefault()
+		return false
 	}
 
 	Event.removeAll = function(el, ev, key, arr, i) {
