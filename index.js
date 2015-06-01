@@ -30,7 +30,6 @@
 	, fixFn = Event.fixFn = {
 		wheel: function(el, _fn) {
 			return function(e) {
-				if (!e) e = window.event
 				var delta = (e.wheelDelta || -e.detail || -e.deltaY)/wheelDiff
 				if (delta != 0) {
 					if (delta < 1 && delta > -1) {
@@ -101,18 +100,18 @@
 	}
 
 	Event.add = function(el, ev, _fn) {
-		var fn = fixFn[ev] ? fixFn[ev](el, _fn) :
-			prefix ? function() {
-				var e = window.event
-				e.target = e.srcElement
-				e.preventDefault = preventDefault
-				e.stopPropagation = stopPropagation
-				_fn.call(el, e)
-			} : _fn
+		var fn = fixFn[ev] ? fixFn[ev](el, _fn) : _fn
+		, fix = prefix ? function() {
+			var e = window.event
+			e.target = e.srcElement
+			e.preventDefault = preventDefault
+			e.stopPropagation = stopPropagation
+			fn.call(el, e)
+		} : fn
 
-		on.call(el, ev, fn, el, _fn)
+		on.call(el, ev, fix, el, _fn)
 
-		el[addEv](prefix + (fixEv[ev] || ev), fn, false)
+		el[addEv](prefix + (fixEv[ev] || ev), fix, false)
 		return Event
 	}
 

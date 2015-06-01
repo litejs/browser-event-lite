@@ -3,6 +3,7 @@
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 	<title>Test</title>
+	<style>html,body{height:150%}</style>
 </head><body>
 
 <script type="text/javascript" src="../../_stable/browser-upgrade-lite/index.js"></script>
@@ -16,8 +17,13 @@
 var click = document.getElementById("click")
 , i1 = 0
 
-Event.add(click, "click", function() {
+Event.add(click, "click", function(e) {
 	this.innerHTML="click "+ (++i1)
+	return Event.stop(e)
+})
+
+Event.add(document.body, "click", function(e) {
+	log.innerHTML+="click body<br>"
 })
 
 var once = document.getElementById("once")
@@ -38,13 +44,11 @@ Event.add(once, "click", function() {
 var wheel = document.getElementById("wheel")
 
 Event.add(wheel, "wheel", function(e, delta) {
-		//console.log(this === wheel, arguments)
-
 	var self = this
 	setTimeout(function(){
 		self.innerHTML="wheel "+delta;
 	},10);
-	Event.stop(e);
+	return Event.stop(e)
 });
 
 /*
