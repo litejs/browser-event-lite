@@ -100,7 +100,7 @@
 	}
 
 	Event.add = function(el, ev, _fn) {
-		var fn = fixFn[ev] ? fixFn[ev](el, _fn) : _fn
+		var fn = fixFn[ev] && fixFn[ev](el, _fn) || _fn
 		, fix = prefix ? function() {
 			var e = window.event
 			e.target = e.srcElement
