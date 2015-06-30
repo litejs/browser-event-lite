@@ -108,10 +108,10 @@
 			e.stopPropagation = stopPropagation
 			fn.call(el, e)
 		} : fn
+		el[addEv](prefix + (fixEv[ev] || ev), fix, false)
 
 		on.call(el, ev, fix, el, _fn)
 
-		el[addEv](prefix + (fixEv[ev] || ev), fix, false)
 		return Event
 	}
 
