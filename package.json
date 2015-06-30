@@ -2,8 +2,8 @@
   "name": "browser-event-lite",
   "version": "0.3.0",
   "stability": 2,
-  "license": "MIT",
   "author": "Lauri Rooden <lauri@rooden.ee>",
+  "license": "MIT",
   "description": "Event helper for browser",
   "keywords": [
     "browser",
@@ -12,6 +12,11 @@
   ],
   "main": "index.js",
   "readmeFilename": "README.md",
+  "files": [
+    "dist",
+    "index.js",
+    "lib"
+  ],
   "scripts": {
     "build": "node node_modules/buildman/index.js --all",
     "travis-test": "istanbul cover ./tests/run.js && (coveralls < coverage/lcov.info || exit 0)",
