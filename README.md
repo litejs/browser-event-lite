@@ -3,8 +3,8 @@
 [2]: https://raw.github.com/litejs/browser-event-lite/master/index.js
 
 
-    @version  0.3.0
-    @date     2015-06-01
+    @version  0.3.1
+    @date     2015-07-01
 
 
 Event
