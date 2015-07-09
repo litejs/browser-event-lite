@@ -103,9 +103,11 @@
 		var fn = fixFn[ev] && fixFn[ev](el, _fn) || _fn
 		, fix = prefix ? function() {
 			var e = window.event
-			e.target = e.srcElement
-			e.preventDefault = preventDefault
-			e.stopPropagation = stopPropagation
+			if (e) {
+				e.target = e.srcElement
+				e.preventDefault = preventDefault
+				e.stopPropagation = stopPropagation
+			}
 			fn.call(el, e)
 		} : fn
 		el[addEv](prefix + (fixEv[ev] || ev), fix, false)
