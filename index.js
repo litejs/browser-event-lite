@@ -31,7 +31,7 @@
 		wheel: function(el, _fn) {
 			return function(e) {
 				var delta = (e.wheelDelta || -e.detail || -e.deltaY)/wheelDiff
-				if (delta != 0) {
+				if (delta) {
 					if (delta < 1 && delta > -1) {
 						var diff = (delta < 0 ? -1 : 1)/delta
 						delta *= diff
@@ -110,6 +110,7 @@
 			}
 			fn.call(el, e)
 		} : fn
+
 		el[addEv](prefix + (fixEv[ev] || ev), fix, false)
 
 		on.call(el, ev, fix, el, _fn)
@@ -137,7 +138,7 @@
 		return false
 	}
 
-	Event.removeAll = function(el, ev, key, arr, i) {
+	Event.removeAll = function(el, ev, key) {
 		if (el._e) for (key in el._e) {
 			if (!ev || key === ev) Event.remove(el, key)
 		}
