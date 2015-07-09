@@ -113,8 +113,6 @@
 		el[addEv](prefix + (fixEv[ev] || ev), fix, false)
 
 		on.call(el, ev, fix, el, _fn)
-
-		return Event
 	}
 
 	Event.remove = function(el, ev, fn) {
@@ -124,7 +122,6 @@
 			el[remEv](prefix + (fixEv[ev] || ev), evs[id + 1])
 			evs.splice(id - 1, 3)
 		}
-		return Event
 	}
 
 	function preventDefault() {
