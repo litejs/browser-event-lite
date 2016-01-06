@@ -133,8 +133,10 @@
 	}
 
 	Event.stop = function(e) {
-		e.stopPropagation()
-		e.preventDefault()
+		if (e.preventDefault) {
+			e.stopPropagation()
+			e.preventDefault()
+		}
 		return false
 	}
 
