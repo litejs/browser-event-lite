@@ -8,6 +8,7 @@
 
 <script type="text/javascript" src="../../_stable/browser-upgrade-lite/index.js"></script>
 <script type="text/javascript" src="../index.js"></script>
+<script type="text/javascript" src="../lib/keymap.js"></script>
 <div id="click">click</div>
 <div id="once">click once</div>
 <div id="wheel">wheel</div>
@@ -50,6 +51,18 @@ Event.add(wheel, "wheel", function(e, delta) {
 	},10);
 	return Event.stop(e)
 });
+
+Event.setKeyMap({
+	all: function(e, num) {
+		log.innerHTML+="all:" + num + "<br>"
+	},
+	num: function(e, num) {
+		log.innerHTML+="num:" + num + "<br>"
+	},
+	numWarn: function() {
+		log.innerHTML+="numWarn!" + "<br>"
+	}
+})
 
 /*
 
