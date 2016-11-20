@@ -1,15 +1,10 @@
 {
   "name": "browser-event-lite",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "stability": 2,
   "author": "Lauri Rooden <lauri@rooden.ee>",
   "license": "MIT",
-  "description": "Event helper for browser",
-  "keywords": [
-    "browser",
-    "event",
-    "litejs"
-  ],
+  "description": "deprecated",
   "main": "index.js",
   "readmeFilename": "README.md",
   "files": [
